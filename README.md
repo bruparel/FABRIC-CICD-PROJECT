@@ -1,5 +1,8 @@
 # Microsoft Fabric CI/CD — fabric-cicd + GitHub Actions
 
+<!-- Replace <OWNER>/<REPO> with your GitHub org/repo path -->
+![Fabric CI/CD](https://github.com/<OWNER>/<REPO>/actions/workflows/fabric-cicd.yml/badge.svg)
+
 End-to-end CI/CD for Microsoft Fabric using **Git as the source of truth**, the [fabric-cicd](https://microsoft.github.io/fabric-cicd/) Python library, and **GitHub Actions** with environment-gated approvals.
 
 > **No Fabric Deployment Pipelines** are used. All deployments are code-first from this repository.
@@ -21,8 +24,11 @@ End-to-end CI/CD for Microsoft Fabric using **Git as the source of truth**, the 
 ## Repository Structure
 
 ```
-├── .github/workflows/
-│   └── fabric-cicd.yml          # GitHub Actions workflow (DEV → QA → PROD)
+├── .github/
+│   ├── workflows/
+│   │   └── fabric-cicd.yml     # GitHub Actions workflow (DEV → QA → PROD)
+│   ├── CODEOWNERS              # Required reviewers for critical paths
+│   └── dependabot.yml          # Automated dependency updates
 ├── config/
 │   └── parameter.yml            # Environment-specific find/replace rules
 ├── deploy/
@@ -32,6 +38,8 @@ End-to-end CI/CD for Microsoft Fabric using **Git as the source of truth**, the 
 ├── .env.example                 # Template for local environment variables
 ├── .gitignore
 ├── requirements.txt             # Pinned Python dependencies
+├── ruff.toml                    # Linter configuration
+├── SECURITY.md                  # Vulnerability disclosure policy
 └── README.md                    # This file
 ```
 
@@ -45,7 +53,7 @@ End-to-end CI/CD for Microsoft Fabric using **Git as the source of truth**, the 
 | **Service Principal** | Registered in Entra ID with Fabric workspace access (Contributor or Admin) |
 | **Fabric Workspaces** | Three workspaces: DEV, QA, PROD |
 | **GitHub Environments** | `dev`, `qa`, `prod` configured in your GitHub repo settings |
-| **GitHub Secrets** | `FABRIC_TENANT_ID`, `FABRIC_CLIENT_ID`, `FABRIC_CLIENT_SECRET`, `DEV_WORKSPACE_ID`, `QA_WORKSPACE_ID`, `PROD_WORKSPACE_ID` |
+| **GitHub Secrets** | Per-env SP creds (`DEV_TENANT_ID`, `DEV_CLIENT_ID`, `DEV_CLIENT_SECRET`, etc.) + workspace IDs (`DEV_WORKSPACE_ID`, `QA_WORKSPACE_ID`, `PROD_WORKSPACE_ID`). Optional shared fallbacks: `FABRIC_TENANT_ID`, `FABRIC_CLIENT_ID`, `FABRIC_CLIENT_SECRET`. |
 
 ---
 
@@ -141,9 +149,18 @@ Add the following secrets at the **repository** level (or per-environment if wor
 
 | Secret | Description |
 |---|---|
-| `FABRIC_TENANT_ID` | Azure AD / Entra ID tenant |
-| `FABRIC_CLIENT_ID` | Service principal app (client) ID |
-| `FABRIC_CLIENT_SECRET` | Service principal secret value |
+| `DEV_TENANT_ID` | Entra ID tenant for the DEV service principal |
+| `DEV_CLIENT_ID` | DEV service principal app (client) ID |
+| `DEV_CLIENT_SECRET` | DEV service principal secret value |
+| `QA_TENANT_ID` | Entra ID tenant for the QA service principal |
+| `QA_CLIENT_ID` | QA service principal app (client) ID |
+| `QA_CLIENT_SECRET` | QA service principal secret value |
+| `PROD_TENANT_ID` | Entra ID tenant for the PROD service principal |
+| `PROD_CLIENT_ID` | PROD service principal app (client) ID |
+| `PROD_CLIENT_SECRET` | PROD service principal secret value |
+| `FABRIC_TENANT_ID` | *(fallback)* Shared tenant ID if per-env vars are not set |
+| `FABRIC_CLIENT_ID` | *(fallback)* Shared client ID if per-env vars are not set |
+| `FABRIC_CLIENT_SECRET` | *(fallback)* Shared secret if per-env vars are not set |
 | `DEV_WORKSPACE_ID` | Fabric workspace ID for DEV |
 | `QA_WORKSPACE_ID` | Fabric workspace ID for QA |
 | `PROD_WORKSPACE_ID` | Fabric workspace ID for PROD |

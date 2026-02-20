@@ -52,6 +52,7 @@ DEFAULT_ITEM_TYPES = [
 ]
 MAX_RETRIES = 3
 RETRY_BACKOFF_SECONDS = 10
+VALID_ENVIRONMENTS = {"DEV", "QA", "PROD"}
 
 
 # ---------------------------------------------------------------------------
@@ -81,12 +82,30 @@ def _parse_items_in_scope(raw: str | None) -> list[str]:
     return items if items else DEFAULT_ITEM_TYPES
 
 
-def _build_credential() -> ClientSecretCredential:
-    """Build a ClientSecretCredential from environment variables."""
-    tenant_id = _env("FABRIC_TENANT_ID")
-    client_id = _env("FABRIC_CLIENT_ID")
-    client_secret = _env("FABRIC_CLIENT_SECRET")
-    logger.info("Authenticating service principal (tenant=%s, client=%s).", tenant_id, client_id)
+def _build_credential(environment: str) -> ClientSecretCredential:
+    """Build a ClientSecretCredential from environment-specific variables.
+
+    Looks for <ENV>_TENANT_ID, <ENV>_CLIENT_ID, <ENV>_CLIENT_SECRET first
+    (e.g. DEV_TENANT_ID), then falls back to the generic FABRIC_* variables.
+    This allows per-environment service principals for least-privilege isolation.
+    """
+    env_prefix = environment.upper()
+    tenant_id = (
+        os.environ.get(f"{env_prefix}_TENANT_ID")
+        or _env("FABRIC_TENANT_ID")
+    )
+    client_id = (
+        os.environ.get(f"{env_prefix}_CLIENT_ID")
+        or _env("FABRIC_CLIENT_ID")
+    )
+    client_secret = (
+        os.environ.get(f"{env_prefix}_CLIENT_SECRET")
+        or _env("FABRIC_CLIENT_SECRET")
+    )
+    logger.info(
+        "Authenticating service principal for %s (tenant=%s, client=%s).",
+        environment, tenant_id, client_id,
+    )
     return ClientSecretCredential(
         tenant_id=tenant_id,
         client_id=client_id,
@@ -114,9 +133,10 @@ def deploy(
     logger.info("  Repo directory: %s", os.path.abspath(repo_dir))
     logger.info("  Item types    : %s", ", ".join(item_types))
     logger.info("  Clean orphans : %s", clean_orphans)
+    logger.info("  Git commit    : %s", os.environ.get("GITHUB_SHA", "local"))
     logger.info("=" * 60)
 
-    credential = _build_credential()
+    credential = _build_credential(environment)
 
     # Build FabricWorkspace object
     workspace = FabricWorkspace(
@@ -168,6 +188,14 @@ def main() -> None:
 
     workspace_id = _env("TARGET_WORKSPACE_ID")
     environment = _env("TARGET_ENVIRONMENT")  # DEV | QA | PROD
+    if environment.upper() not in VALID_ENVIRONMENTS:
+        logger.error(
+            "Invalid TARGET_ENVIRONMENT '%s'. Must be one of: %s",
+            environment,
+            ", ".join(sorted(VALID_ENVIRONMENTS)),
+        )
+        sys.exit(1)
+    environment = environment.upper()
     repo_dir = _env("REPO_DIR", required=False, default=DEFAULT_REPO_DIR)
     items_in_scope = _parse_items_in_scope(_env("ITEMS_IN_SCOPE", required=False))
     clean_orphans = _parse_bool(_env("CLEAN_ORPHANS", required=False, default="false"))

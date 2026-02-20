@@ -4,3 +4,6 @@
 fabric-cicd==0.1.2
 azure-identity==1.19.0
 pyyaml==6.0.2
+
+# Development / CI tooling
+ruff>=0.8.0
