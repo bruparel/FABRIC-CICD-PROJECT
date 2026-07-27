@@ -17,6 +17,7 @@ import logging
 import os
 import sys
 import time
+import traceback
 from datetime import datetime, timezone
 
 from azure.identity import ClientSecretCredential
@@ -209,7 +210,7 @@ def main() -> None:
             clean_orphans=clean_orphans,
         )
     except Exception:
-        import traceback
+        # import traceback
         traceback.print_exc()
         logger.exception("Deployment failed.")
         sys.exit(1)
