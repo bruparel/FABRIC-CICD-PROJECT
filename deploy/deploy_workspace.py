@@ -209,6 +209,8 @@ def main() -> None:
             clean_orphans=clean_orphans,
         )
     except Exception:
+        import traceback
+        traceback.print_exc()
         logger.exception("Deployment failed.")
         sys.exit(1)
     finally:
