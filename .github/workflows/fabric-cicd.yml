@@ -101,7 +101,7 @@ jobs:
           FABRIC_TENANT_ID:    ${{ secrets.FABRIC_TENANT_ID }}   # fallback
           FABRIC_CLIENT_ID:    ${{ secrets.FABRIC_CLIENT_ID }}   # fallback
           FABRIC_CLIENT_SECRET: ${{ secrets.FABRIC_CLIENT_SECRET }} # fallback
-          TARGET_WORKSPACE_ID: ${{ secrets.DEV_WORKSPACE_ID }}
+          TARGET_WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
           TARGET_ENVIRONMENT:  "DEV"
           REPO_DIR:            ${{ env.REPO_DIR }}
           ITEMS_IN_SCOPE:      ${{ env.ITEMS_IN_SCOPE }}
@@ -151,7 +151,7 @@ jobs:
           FABRIC_TENANT_ID:    ${{ secrets.FABRIC_TENANT_ID }}   # fallback
           FABRIC_CLIENT_ID:    ${{ secrets.FABRIC_CLIENT_ID }}   # fallback
           FABRIC_CLIENT_SECRET: ${{ secrets.FABRIC_CLIENT_SECRET }} # fallback
-          TARGET_WORKSPACE_ID: ${{ secrets.QA_WORKSPACE_ID }}
+          TARGET_WORKSPACE_ID: ${{ vars.QA_WORKSPACE_ID }}
           TARGET_ENVIRONMENT:  "QA"
           REPO_DIR:            ${{ env.REPO_DIR }}
           ITEMS_IN_SCOPE:      ${{ env.ITEMS_IN_SCOPE }}
@@ -201,7 +201,7 @@ jobs:
           FABRIC_TENANT_ID:    ${{ secrets.FABRIC_TENANT_ID }}   # fallback
           FABRIC_CLIENT_ID:    ${{ secrets.FABRIC_CLIENT_ID }}   # fallback
           FABRIC_CLIENT_SECRET: ${{ secrets.FABRIC_CLIENT_SECRET }} # fallback
-          TARGET_WORKSPACE_ID: ${{ secrets.PROD_WORKSPACE_ID }}
+          TARGET_WORKSPACE_ID: ${{ vars.PROD_WORKSPACE_ID }}
           TARGET_ENVIRONMENT:  "PROD"
           REPO_DIR:            ${{ env.REPO_DIR }}
           ITEMS_IN_SCOPE:      ${{ env.ITEMS_IN_SCOPE }}
